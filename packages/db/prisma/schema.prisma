@@ -318,7 +318,7 @@ model ProductVariant {
 
 model Cart {
   id              String      @id @default(cuid())
-  // One of these must be set — enforced at application level
+  // One of these must be set — enforced at DB level via CHECK constraint
   customerId      String?     @unique       // authenticated customer
   guestSessionId  String?     @unique       // guest session cookie value
   expiresAt       DateTime?                 // guest carts expire; authenticated carts do not

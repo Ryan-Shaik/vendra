@@ -21,6 +21,7 @@ change.
   - [x] Create Prisma client singleton with driver adapter support
   - [x] Modernize to Prisma 7.8.0 (configured `prisma.config.ts`, local generated client)
   - [x] Implement seed script with root categories
+  - [x] Refactor CommissionConfig to explicit relations (vendorId/categoryId) with DB check constraints
 
 ## In Progress
 
