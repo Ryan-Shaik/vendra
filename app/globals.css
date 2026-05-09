@@ -1,26 +1,129 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Backgrounds */
+  --bg-base:        #F9F8F6;
+  --bg-surface:     #FFFFFF;
+  --bg-surface-2:   #F2F0EB;
+
+  /* Text */
+  --text-primary:   #1C1C1A;
+  --text-muted:     #6B6B67;
+
+  /* Accents */
+  --accent-primary: #1A6B4A;
+  --accent-warm:    #F7C948;
+
+  /* Border */
+  --border-default: rgba(28, 28, 26, 0.12);
+
+  /* Semantic states */
+  --state-success:  #1A6B4A;
+  --state-error:    #C0392B;
+  --state-warning:  #E07B00;
+  --state-info:     #1B5FA8;
+
+  /* Shadcn/UI Variable Mapping */
+  --background:             var(--bg-base);
+  --foreground:             var(--text-primary);
+  --card:                   var(--bg-surface);
+  --card-foreground:        var(--text-primary);
+  --popover:                var(--bg-surface);
+  --popover-foreground:     var(--text-primary);
+  --primary:                var(--accent-primary);
+  --primary-foreground:     #FFFFFF;
+  --secondary:              var(--bg-surface-2);
+  --secondary-foreground:   var(--text-primary);
+  --muted:                  var(--bg-surface-2);
+  --muted-foreground:       var(--text-muted);
+  --accent:                 var(--accent-warm);
+  --accent-foreground:      var(--text-primary);
+  --destructive:            var(--state-error);
+  --destructive-foreground: #FFFFFF;
+  --border:                 var(--border-default);
+  --input:                  var(--border-default);
+  --ring:                   var(--accent-primary);
+  --radius:                 10px;
+
+  /* Chart Colors (Defaults) */
+  --chart-1: #1A6B4A;
+  --chart-2: #F7C948;
+  --chart-3: #1B5FA8;
+  --chart-4: #E07B00;
+  --chart-5: #6B6B67;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Project color tokens → Tailwind utility classes */
+  --color-bg-base:              var(--bg-base);
+  --color-bg-surface:           var(--bg-surface);
+  --color-bg-surface-2:         var(--bg-surface-2);
+  --color-text-primary:         var(--text-primary);
+  --color-text-muted:           var(--text-muted);
+  --color-accent-primary:       var(--accent-primary);
+  --color-accent-warm:          var(--accent-warm);
+  --color-state-success:        var(--state-success);
+  --color-state-error:          var(--state-error);
+  --color-state-warning:        var(--state-warning);
+  --color-state-info:           var(--state-info);
+
+  /* Shadcn color tokens → utilities */
+  --color-background:           var(--background);
+  --color-foreground:           var(--foreground);
+  --color-card:                 var(--card);
+  --color-card-foreground:      var(--card-foreground);
+  --color-popover:              var(--popover);
+  --color-popover-foreground:   var(--popover-foreground);
+  --color-primary:              var(--primary);
+  --color-primary-foreground:   var(--primary-foreground);
+  --color-secondary:            var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted:                var(--muted);
+  --color-muted-foreground:     var(--muted-foreground);
+  --color-accent:               var(--accent);
+  --color-accent-foreground:    var(--accent-foreground);
+  --color-destructive:          var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border:               var(--border);
+  --color-input:                var(--input);
+  --color-ring:                 var(--ring);
+
+  /* Typography */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-sans:    'DM Sans', 'Helvetica Neue', sans-serif;
+  --font-mono:    'DM Mono', 'Courier New', monospace;
+
+  /* Border radius scale */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+  }
+
+  *, ::after, ::before, ::backdrop, ::file-selector-button {
+    border-color: var(--border-default);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
