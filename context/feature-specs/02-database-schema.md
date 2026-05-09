@@ -759,7 +759,7 @@ async function main() {
   console.log('🌱 Seeding database...')
 
   // 1. Default global commission config
-  // Resolve open question #1 before running seed — update rate as decided
+  // Global commission rate set to 8% for platform launch
   const existingConfig = await prisma.commissionConfig.findFirst({
     where: { scope: 'global', scopeId: null },
   })
@@ -769,7 +769,7 @@ async function main() {
       data: {
         scope: 'global',
         scopeId: null,
-        rate: 0.08,       // 8% — UPDATE THIS before seeding (Open Question #1)
+        rate: 0.08,       // 8% — Default global commission rate
         createdBy: 'seed',
         note: 'Default global commission rate set at platform launch',
       },

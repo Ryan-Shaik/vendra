@@ -1,11 +1,10 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../generated"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 // ─────────────────────────────────────────────
@@ -248,6 +247,7 @@ model Category {
   updatedAt       DateTime    @updatedAt
 
   products        Product[]
+  commissionConfigs CommissionConfig[] @relation("CategoryCommission")
 
   @@index([slug])
   @@index([parentId])
@@ -336,7 +336,7 @@ model CartItem {
   cartId          String
   cart            Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
   productVariantId String
-  productVariant  ProductVariant  @relation(fields: [productVariantId], references: [id], onDelete: Restrict)
+  productVariant  ProductVariant  @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
   quantity        Int
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
@@ -447,8 +447,8 @@ model Invoice {
 model CommissionConfig {
   id            String          @id @default(cuid())
   scope         CommissionScope
-  // scopeId is null for global, categoryId for category scope, vendorId for vendor scope
-  scopeId       String?
+  vendorId      String?
+  categoryId    String?
   rate          Decimal         @db.Decimal(5, 4)   // e.g. 0.0800 = 8%
   effectiveFrom DateTime        @default(now())
   createdBy     String                               // super_admin userId
@@ -456,9 +456,12 @@ model CommissionConfig {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
-  vendor        Vendor?         @relation("VendorCommission", fields: [scopeId], references: [id], onDelete: Cascade)
+  vendor        Vendor?         @relation("VendorCommission", fields: [vendorId], references: [id], onDelete: Cascade)
+  category      Category?       @relation("CategoryCommission", fields: [categoryId], references: [id], onDelete: Cascade)
 
-  @@index([scope, scopeId])
+  @@index([scope])
+  @@index([vendorId])
+  @@index([categoryId])
 }
 
 model PayoutBatch {

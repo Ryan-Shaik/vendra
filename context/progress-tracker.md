@@ -18,7 +18,8 @@ change.
   - [x] Initialize monorepo structure (create `packages/db`, moved app to `apps/marketplace`)
   - [x] Configure `schema.prisma` with all models and enums
   - [x] Run first migration with manual XOR check constraint
-  - [x] Create Prisma client singleton
+  - [x] Create Prisma client singleton with driver adapter support
+  - [x] Modernize to Prisma 7.8.0 (configured `prisma.config.ts`, local generated client)
   - [x] Implement seed script with root categories
 
 ## In Progress
@@ -44,3 +45,7 @@ change.
 - Phase 1, Unit 1.1 is 100% complete.
 - Build verified (Turbopack).
 - All custom project tokens (`bg-base`, `accent-primary`, etc.) are exposed as Tailwind utilities and mapped to Shadcn variables.
+- Database foundation upgraded to Prisma 7.8.0.
+- Implemented `prisma.config.ts` and `PrismaPg` adapter for enhanced performance and modern connection management.
+- Configured local `generated/` output for Prisma client to resolve monorepo hoisting and resolution issues.
+- Verified end-to-end connectivity and seeding.

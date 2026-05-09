@@ -5,15 +5,16 @@ async function main() {
 
   // 1. Default global commission config
   const existingConfig = await prisma.commissionConfig.findFirst({
-    where: { scope: 'global', scopeId: null },
+    where: { scope: 'global', vendorId: null, categoryId: null },
   })
 
   if (!existingConfig) {
     await prisma.commissionConfig.create({
       data: {
         scope: 'global',
-        scopeId: null,
-        rate: 0.08,       // 8% — Default commission rate
+        vendorId: null,
+        categoryId: null,
+        rate: 0.08,       // 8% — Default global commission rate
         createdBy: 'seed',
         note: 'Default global commission rate set at platform launch',
       },
