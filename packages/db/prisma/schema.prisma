@@ -1,0 +1,599 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum Role {
+  customer
+  vendor
+  moderator
+  super_admin
+}
+
+enum VendorStatus {
+  pending
+  approved
+  suspended
+  rejected
+}
+
+enum StripeConnectStatus {
+  not_started
+  onboarding
+  active
+  restricted
+}
+
+enum ProductStatus {
+  draft
+  published
+  out_of_stock
+  delisted
+}
+
+enum OrderStatus {
+  pending_payment
+  payment_confirmed
+  processing
+  shipped
+  delivered
+  cancelled
+  refunded
+  return_requested
+  returned
+}
+
+enum CommissionScope {
+  global
+  category
+  vendor
+}
+
+enum PayoutStatus {
+  pending
+  held
+  released
+}
+
+enum DisputeStatus {
+  open
+  under_review
+  resolved
+  dismissed
+}
+
+enum DisputeResolutionType {
+  full_refund
+  partial_refund
+  dismissed
+}
+
+enum NotificationType {
+  new_order
+  order_status_change
+  payout_released
+  payout_held
+  dispute_opened
+  dispute_resolved
+  vendor_approved
+  vendor_rejected
+  vendor_suspended
+  admin_role_changed
+  low_stock
+  out_of_stock
+}
+
+enum FlaggedProductStatus {
+  pending
+  delisted
+  reinstated
+}
+
+enum AdminActionType {
+  vendor_approved
+  vendor_rejected
+  vendor_suspended
+  vendor_reactivated
+  product_delisted
+  product_reinstated
+  dispute_resolved
+  payout_held
+  payout_released
+  moderator_created
+  user_promoted
+  user_demoted
+  user_deactivated
+}
+
+// ─────────────────────────────────────────────
+// USER & AUTH
+// ─────────────────────────────────────────────
+
+model User {
+  id          String    @id @default(cuid())
+  clerkId     String    @unique           // Clerk userId — primary auth identifier
+  email       String    @unique
+  role        Role      @default(customer)
+  isActive    Boolean   @default(true)    // false = deactivated by super_admin
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  customer    Customer?
+  vendor      Vendor?
+  notifications Notification[]
+  adminActions  AdminActivity[] @relation("ActorActions")
+
+  @@index([clerkId])
+  @@index([email])
+  @@index([role])
+}
+
+model Customer {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  addresses   Address[]
+  reviews     Review[]
+  orders      Order[]   @relation("CustomerOrders")
+  cart        Cart?
+}
+
+model Address {
+  id          String    @id @default(cuid())
+  customerId  String
+  customer    Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  fullName    String
+  line1       String
+  line2       String?
+  city        String
+  state       String?
+  postcode    String
+  country     String    @default("BD")
+  phone       String?
+  isDefault   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  orders      Order[]   @relation("ShippingAddress")
+
+  @@index([customerId])
+}
+
+// ─────────────────────────────────────────────
+// VENDOR
+// ─────────────────────────────────────────────
+
+model Vendor {
+  id                    String              @id @default(cuid())
+  userId                String              @unique
+  user                  User                @relation(fields: [userId], references: [id], onDelete: Restrict)
+  storeName             String
+  storeSlug             String              @unique
+  description           String?
+  logoUrl               String?
+  bannerUrl             String?
+  status                VendorStatus        @default(pending)
+  stripeConnectAccountId String?            @unique
+  stripeConnectStatus   StripeConnectStatus @default(not_started)
+  returnPolicy          String?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  onboarding            VendorOnboarding?
+  products              Product[]
+  orders                OrderLineItem[]
+  payoutBatches         PayoutBatch[]
+  commissionConfigs     CommissionConfig[]  @relation("VendorCommission")
+  shippingZones         ShippingZone[]
+  notifications         Notification[]      @relation("VendorNotifications")
+  flaggedProducts       FlaggedProduct[]    @relation("FlaggedByVendor")
+
+  @@index([storeSlug])
+  @@index([status])
+}
+
+model VendorOnboarding {
+  id              String    @id @default(cuid())
+  vendorId        String    @unique
+  vendor          Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  profileComplete Boolean   @default(false)  // Step 1: store name, logo, description
+  shippingComplete Boolean  @default(false)  // Step 2: at least one shipping zone
+  stripeComplete  Boolean   @default(false)  // Step 3: Stripe Connect active
+  isComplete      Boolean   @default(false)  // true when all 3 are true — gates publishing
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model ShippingZone {
+  id          String    @id @default(cuid())
+  vendorId    String
+  vendor      Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  name        String                          // e.g. "Dhaka City", "All Bangladesh"
+  countries   String[]  @default(["BD"])
+  baseRate    Decimal   @db.Decimal(10, 2)   // flat shipping fee
+  freeAbove   Decimal?  @db.Decimal(10, 2)   // free shipping threshold
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([vendorId])
+}
+
+// ─────────────────────────────────────────────
+// CATALOG
+// ─────────────────────────────────────────────
+
+model Category {
+  id              String      @id @default(cuid())
+  name            String
+  slug            String      @unique
+  description     String?
+  imageUrl        String?
+  parentId        String?
+  parent          Category?   @relation("Subcategories", fields: [parentId], references: [id], onDelete: Restrict)
+  children        Category[]  @relation("Subcategories")
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  products        Product[]
+  commissionConfigs CommissionConfig[] @relation("CategoryCommission")
+
+  @@index([slug])
+  @@index([parentId])
+}
+
+model Product {
+  id              String        @id @default(cuid())
+  vendorId        String
+  vendor          Vendor        @relation(fields: [vendorId], references: [id], onDelete: Restrict)
+  categoryId      String?
+  category        Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  title           String
+  slug            String        @unique
+  description     String
+  status          ProductStatus @default(draft)
+  averageRating   Decimal       @default(0) @db.Decimal(3, 2)
+  reviewCount     Int           @default(0)
+  publishedAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  variants        ProductVariant[]
+  images          ProductImage[]
+  reviews         Review[]
+  flagged         FlaggedProduct?
+
+  @@index([vendorId])
+  @@index([categoryId])
+  @@index([slug])
+  @@index([status])
+}
+
+model ProductImage {
+  id          String    @id @default(cuid())
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url         String                          // UploadThing CDN URL
+  altText     String?
+  position    Int       @default(0)           // display order
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([productId])
+}
+
+model ProductVariant {
+  id            String    @id @default(cuid())
+  productId     String
+  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku           String    @unique
+  price         Decimal   @db.Decimal(10, 2)
+  comparePrice  Decimal?  @db.Decimal(10, 2) // original price for showing discounts
+  stockQuantity Int       @default(0)
+  attributes    Json      @default("{}")      // e.g. { "size": "M", "color": "Red" }
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  cartItems     CartItem[]
+  orderItems    OrderLineItem[]
+
+  @@index([productId])
+  @@index([sku])
+}
+
+// ─────────────────────────────────────────────
+// CART
+// ─────────────────────────────────────────────
+
+model Cart {
+  id              String      @id @default(cuid())
+  // One of these must be set — enforced at DB level via CHECK constraint
+  customerId      String?     @unique       // authenticated customer
+  guestSessionId  String?     @unique       // guest session cookie value
+  expiresAt       DateTime?                 // guest carts expire; authenticated carts do not
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  customer        Customer?   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  items           CartItem[]
+
+  @@index([guestSessionId])
+}
+
+model CartItem {
+  id              String          @id @default(cuid())
+  cartId          String
+  cart            Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productVariantId String
+  productVariant  ProductVariant  @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+  quantity        Int
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@unique([cartId, productVariantId])  // one row per variant per cart
+  @@index([cartId])
+}
+
+// ─────────────────────────────────────────────
+// ORDERS
+// ─────────────────────────────────────────────
+
+model Order {
+  id                    String      @id @default(cuid())
+  // Exactly one of these must be set — enforced by DB check constraint (see migration notes)
+  customerId            String?
+  customer              Customer?   @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: Restrict)
+  guestEmail            String?
+  guestToken            String?     @unique  // for guest order tracking URL
+
+  addressId             String?
+  shippingAddress       Address?    @relation("ShippingAddress", fields: [addressId], references: [id], onDelete: SetNull)
+  shippingAddressSnapshot Json?     // snapshot of address at order time in case address is later deleted
+
+  status                OrderStatus @default(pending_payment)
+  subtotal              Decimal     @db.Decimal(10, 2)
+  shippingTotal         Decimal     @db.Decimal(10, 2) @default(0)
+  total                 Decimal     @db.Decimal(10, 2)
+
+  stripePaymentIntentId String?     @unique
+  stripeSessionId       String?     @unique
+
+  notes                 String?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  lineItems             OrderLineItem[]
+  shipments             ShipmentTracking[]
+  dispute               Dispute?
+  invoice               Invoice?
+
+  @@index([customerId])
+  @@index([guestEmail])
+  @@index([status])
+  @@index([stripePaymentIntentId])
+}
+
+model OrderLineItem {
+  id                    String          @id @default(cuid())
+  orderId               String
+  order                 Order           @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  productVariantId      String
+  productVariant        ProductVariant  @relation(fields: [productVariantId], references: [id], onDelete: Restrict)
+  vendorId              String
+  vendor                Vendor          @relation(fields: [vendorId], references: [id], onDelete: Restrict)
+
+  // Snapshot values at order time — never recalculate from live product/commission data
+  productTitle          String
+  variantAttributes     Json            // snapshot of variant attributes
+  unitPrice             Decimal         @db.Decimal(10, 2)
+  quantity              Int
+  commissionRate        Decimal         @db.Decimal(5, 4)   // e.g. 0.0800 = 8%
+  commissionAmount      Decimal         @db.Decimal(10, 2)  // unitPrice * quantity * commissionRate
+  vendorEarnings        Decimal         @db.Decimal(10, 2)  // (unitPrice * quantity) - commissionAmount
+
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  payoutBatch           PayoutBatch?    @relation(fields: [payoutBatchId], references: [id])
+  payoutBatchId         String?
+
+  @@index([orderId])
+  @@index([vendorId])
+}
+
+model ShipmentTracking {
+  id              String    @id @default(cuid())
+  orderId         String
+  order           Order     @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  carrier         String?
+  trackingNumber  String?
+  trackingUrl     String?
+  status          String    // e.g. "preparing", "in_transit", "out_for_delivery", "delivered"
+  estimatedDelivery DateTime?
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([orderId])
+}
+
+model Invoice {
+  id          String    @id @default(cuid())
+  orderId     String    @unique
+  order       Order     @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  invoiceNumber String  @unique
+  pdfUrl      String?                         // UploadThing CDN URL for generated PDF
+  issuedAt    DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// COMMISSIONS & PAYOUTS
+// ─────────────────────────────────────────────
+
+model CommissionConfig {
+  id            String          @id @default(cuid())
+  scope         CommissionScope
+  vendorId      String?
+  categoryId    String?
+  rate          Decimal         @db.Decimal(5, 4)   // e.g. 0.0800 = 8%
+  effectiveFrom DateTime        @default(now())
+  createdBy     String                               // super_admin userId
+  note          String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  vendor        Vendor?         @relation("VendorCommission", fields: [vendorId], references: [id], onDelete: Cascade)
+  category      Category?       @relation("CategoryCommission", fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([scope])
+  @@index([vendorId])
+  @@index([categoryId])
+}
+
+model PayoutBatch {
+  id                  String        @id @default(cuid())
+  vendorId            String
+  vendor              Vendor        @relation(fields: [vendorId], references: [id], onDelete: Restrict)
+  settlementPeriodStart DateTime
+  settlementPeriodEnd   DateTime
+  grossAmount         Decimal       @db.Decimal(10, 2)
+  commissionDeducted  Decimal       @db.Decimal(10, 2)
+  netAmount           Decimal       @db.Decimal(10, 2)
+  status              PayoutStatus  @default(pending)
+  stripeTransferId    String?       @unique
+  releasedBy          String?                         // super_admin userId
+  releasedAt          DateTime?
+  holdReason          String?
+  heldBy              String?                         // super_admin userId
+  heldAt              DateTime?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  lineItems           OrderLineItem[]
+
+  @@index([vendorId])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────
+// DISPUTES
+// ─────────────────────────────────────────────
+
+model Dispute {
+  id                String                  @id @default(cuid())
+  orderId           String                  @unique
+  order             Order                   @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  raisedBy          String                  // userId (customer) or vendorId
+  raisedByType      String                  // "customer" | "vendor"
+  reason            String
+  evidenceUrls      String[]                // UploadThing CDN URLs for supporting files
+  status            DisputeStatus           @default(open)
+  resolutionType    DisputeResolutionType?
+  resolutionNote    String?
+  refundAmount      Decimal?                @db.Decimal(10, 2)
+  stripeRefundId    String?                 @unique
+  resolvedBy        String?                 // moderator or super_admin userId
+  resolvedAt        DateTime?
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────
+// REVIEWS
+// ─────────────────────────────────────────────
+
+model Review {
+  id          String    @id @default(cuid())
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customerId  String
+  customer    Customer  @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  orderId     String                            // verified purchase — must reference a delivered order
+  rating      Int                               // 1–5
+  body        String?
+  isVerified  Boolean   @default(true)          // always true — only purchase-verified reviews accepted
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([productId, customerId])             // one review per customer per product
+  @@index([productId])
+  @@index([customerId])
+}
+
+// ─────────────────────────────────────────────
+// NOTIFICATIONS
+// ─────────────────────────────────────────────
+
+model Notification {
+  id                String            @id @default(cuid())
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vendorId          String?
+  vendor            Vendor?           @relation("VendorNotifications", fields: [vendorId], references: [id], onDelete: Cascade)
+  type              NotificationType
+  title             String
+  message           String
+  relatedEntityId   String?           // orderId, disputeId, payoutBatchId, etc.
+  relatedEntityType String?           // "Order" | "Dispute" | "PayoutBatch" etc.
+  read              Boolean           @default(false)
+  readAt            DateTime?
+  createdAt         DateTime          @default(now())
+  // No updatedAt — notifications are immutable once created
+
+  @@index([userId, read])
+  @@index([vendorId])
+}
+
+// ─────────────────────────────────────────────
+// ADMIN & MODERATION
+// ─────────────────────────────────────────────
+
+model FlaggedProduct {
+  id          String                @id @default(cuid())
+  productId   String                @unique
+  product     Product               @relation(fields: [productId], references: [id], onDelete: Cascade)
+  flaggedBy   String                // userId of customer or moderator who flagged
+  vendorId    String
+  vendor      Vendor                @relation("FlaggedByVendor", fields: [vendorId], references: [id], onDelete: Restrict)
+  reason      String
+  status      FlaggedProductStatus  @default(pending)
+  resolvedBy  String?               // moderator or super_admin userId
+  resolvedAt  DateTime?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  @@index([status])
+}
+
+model AdminActivity {
+  id                String          @id @default(cuid())
+  actorId           String
+  actor             User            @relation("ActorActions", fields: [actorId], references: [id], onDelete: Restrict)
+  actorRole         Role
+  action            AdminActionType
+  targetEntityType  String          // "Vendor" | "Product" | "User" | "PayoutBatch" | "Dispute"
+  targetEntityId    String
+  metadata          Json?           // additional context — e.g. old role, new role, reason
+  createdAt         DateTime        @default(now())
+  // No updatedAt — audit log entries are immutable
+
+  @@index([actorId])
+  @@index([targetEntityType, targetEntityId])
+  @@index([createdAt])
+}
