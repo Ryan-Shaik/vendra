@@ -22,14 +22,21 @@ change.
   - [x] Modernize to Prisma 7.8.0 (configured `prisma.config.ts`, local generated client)
   - [x] Implement seed script with root categories
   - [x] Refactor CommissionConfig to explicit relations (vendorId/categoryId) with DB check constraints
+- [x] 1.3 Authentication (Clerk) with multi-role support:
+  - [x] Installed and configured Clerk for marketplace and admin apps
+  - [x] Implemented global types, auth helpers, and proxy middleware route protections
+  - [x] Created custom sign-in/sign-up pages and callback handlers
+  - [x] Implemented Clerk webhook to sync user, vendor, and customer records to database
+  - [x] Built admin service endpoints for role management and account deactivation
 
 ## In Progress
 
-- [ ] 1.3 Authentication (Clerk) with multi-role support
+- None
 
 ## Next Up
 
-- 1.3 Authentication (Clerk) with multi-role support
+- 1.4 Vendor Onboarding & Store Management
+
 
 ## Open Questions
 
