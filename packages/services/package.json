@@ -1,0 +1,10 @@
+{
+  "name": "@vendra/services",
+  "version": "0.0.1",
+  "main": "./index.ts",
+  "dependencies": {
+    "@vendra/db": "*",
+    "@vendra/types": "*",
+    "@clerk/nextjs": "^6.0.0"
+  }
+}
