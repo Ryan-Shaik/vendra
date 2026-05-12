@@ -1,7 +1,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { type ZodSchema } from 'zod'
 import { prisma } from '@vendra/db'
-import { type Role } from '@vendra/types'
+import { type Role, isRole } from '@vendra/types'
 import { errorResponse } from './response'
 
 interface HandlerOptions<TInput> {
@@ -28,8 +28,9 @@ type HandlerFn<TInput> = (
 function getRoleFromClaims(sessionClaims: unknown): Role | undefined {
   if (!sessionClaims || typeof sessionClaims !== 'object') return undefined
 
-  const claims = sessionClaims as { metadata?: { role?: Role } }
-  return claims.metadata?.role
+  const claims = sessionClaims as { metadata?: { role?: unknown } }
+  const role = claims.metadata?.role
+  return isRole(role) ? role : undefined
 }
 
 /**

@@ -73,3 +73,7 @@ change.
 - Updated `@clerk/nextjs` in `packages/services/package.json` to `^7.3.3` on May 12, 2026, to match `apps/admin` and `apps/marketplace` versions and avoid version conflicts. Verified with `npm install`, `tsc` for services, and successful production builds for both apps.
 - Refactored `CreateOrderSchema` in `packages/types/order.ts` to enforce an exclusive-or (XOR) constraint between `addressId` and `shippingAddress`. Verified with a Zod validation test suite.
 - Hardened `createAction` in `packages/services/action.ts` to enforce role presence for all actions. Implemented `isRole` type guard for session claims and removed non-null assertions, ensuring type-safe context passing to action implementations.
+- Refactored `@vendra/db` build script to use `shx` for cross-platform compatibility.
+- Fixed `isPromotion` logic in `admin.service.ts` and refined audit logging to exclude redundant equal-role transitions.
+- Configured `packages/db`, `packages/services`, and `packages/types` with `"type": "module"` for consistent ESM support.
+- Synchronized `getRoleFromClaims` hardening across `apps/admin` and `apps/marketplace` route handlers.

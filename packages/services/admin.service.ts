@@ -14,7 +14,7 @@ function isPromotion(oldRole: Role, newRole: Role): boolean {
     super_admin: 3,
   }
 
-  return rank[newRole] >= rank[oldRole]
+  return rank[newRole] > rank[oldRole]
 }
 
 export async function updateUserRole(
@@ -48,16 +48,18 @@ export async function updateUserRole(
       return err('NOT_FOUND', 'Actor not found', 404)
     }
 
-    await prisma.adminActivity.create({
-      data: {
-        actorId,
-        actorRole,
-        action: isPromotion(targetUser.role, newRole) ? 'user_promoted' : 'user_demoted',
-        targetEntityType: 'User',
-        targetEntityId: targetClerkId,
-        metadata: { oldRole: targetUser.role, newRole },
-      },
-    })
+    if (targetUser.role !== newRole) {
+      await prisma.adminActivity.create({
+        data: {
+          actorId,
+          actorRole,
+          action: isPromotion(targetUser.role, newRole) ? 'user_promoted' : 'user_demoted',
+          targetEntityType: 'User',
+          targetEntityId: targetClerkId,
+          metadata: { oldRole: targetUser.role, newRole },
+        },
+      })
+    }
 
     return ok(undefined)
   } catch (error: unknown) {
