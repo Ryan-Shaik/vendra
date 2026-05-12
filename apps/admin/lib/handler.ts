@@ -16,7 +16,7 @@ interface HandlerOptions<TInput> {
 interface HandlerContext<TInput> {
   userId:     string | null
   vendorId?:  string
-  role?:      string
+  role?:      Role
   input:      TInput
   req:        Request
 }
@@ -54,7 +54,7 @@ export function createHandler<TInput = unknown>(
         const allowedRoles = Array.isArray(options.requireRole)
           ? options.requireRole
           : [options.requireRole]
-        if (!allowedRoles.includes(role as Role)) {
+        if (!role || !allowedRoles.includes(role)) {
           return errorResponse('Forbidden', 403)
         }
       }
@@ -86,7 +86,11 @@ export function createHandler<TInput = unknown>(
         let body: unknown = {}
         const contentType = req.headers.get('content-type') ?? ''
         if (contentType.includes('application/json')) {
-          body = await req.json().catch(() => ({}))
+          try {
+            body = await req.json()
+          } catch {
+            return errorResponse('Malformed JSON', 400)
+          }
         }
 
         const parsed = options.schema.safeParse(body)

@@ -7,8 +7,8 @@ export const CreateOrderSchema = z.object({
   shippingAddress: AddressInputSchema.optional(), // guest or new address
   guestEmail:      z.string().email().optional(),
 }).refine(
-  (data) => data.addressId || data.shippingAddress,
-  { message: 'Either addressId or shippingAddress must be provided' }
+  (data) => Boolean(data.addressId) !== Boolean(data.shippingAddress),
+  { message: 'Exactly one of addressId or shippingAddress must be provided' }
 )
 export type CreateOrderInput = z.infer<typeof CreateOrderSchema>
 

@@ -1,10 +1,17 @@
 {
   "name": "@vendra/services",
   "version": "0.0.1",
-  "main": "./index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
   "dependencies": {
     "@vendra/db": "*",
     "@vendra/types": "*",
-    "@clerk/nextjs": "^6.0.0"
+    "@clerk/nextjs": "^7.3.3"
   }
 }

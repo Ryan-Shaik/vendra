@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "dev": "npm run dev --workspaces --if-present",
-    "build": "npm run build --workspaces --if-present",
+    "build": "npm run build --workspace=@vendra/types && npm run build --workspace=@vendra/db && npm run build --workspace=@vendra/services && npm run build --workspace=@vendra/marketplace && npm run build --workspace=@vendra/admin",
     "lint": "npm run lint --workspaces --if-present",
     "db:generate": "npm run db:generate --workspace=@vendra/db",
     "db:migrate": "npm run db:migrate --workspace=@vendra/db",

@@ -2,7 +2,7 @@
 
 import { auth } from '@clerk/nextjs/server'
 import { type ZodSchema, type z } from 'zod'
-import { type Role, type ServiceResult, err } from '@vendra/types'
+import { type Role, type ServiceResult, err, isRole } from '@vendra/types'
 
 interface ActionOptions<TSchema extends ZodSchema> {
   schema:       TSchema
@@ -16,8 +16,9 @@ type ActionFn<TInput, TOutput> = (
 function getRoleFromClaims(sessionClaims: unknown): Role | undefined {
   if (!sessionClaims || typeof sessionClaims !== 'object') return undefined
 
-  const claims = sessionClaims as { metadata?: { role?: Role } }
-  return claims.metadata?.role
+  const claims = sessionClaims as { metadata?: { role?: unknown } }
+  const role = claims.metadata?.role
+  return isRole(role) ? role : undefined
 }
 
 /**
@@ -42,11 +43,15 @@ export function createAction<TSchema extends ZodSchema, TOutput>(
       const role = getRoleFromClaims(sessionClaims)
 
       // 2. Enforce role
+      if (!role) {
+        return err('FORBIDDEN', 'Role missing from session', 403)
+      }
+
       if (options.requireRole) {
         const allowedRoles = Array.isArray(options.requireRole)
           ? options.requireRole
           : [options.requireRole]
-        if (!role || !allowedRoles.includes(role)) {
+        if (!allowedRoles.includes(role)) {
           return err('FORBIDDEN', 'You do not have permission', 403)
         }
       }
@@ -58,7 +63,7 @@ export function createAction<TSchema extends ZodSchema, TOutput>(
       }
 
       // 4. Call the service
-      return await fn({ userId, role: role!, input: parsed.data })
+      return await fn({ userId, role, input: parsed.data })
     } catch (error) {
       console.error('[createAction] Unhandled error:', error)
       return err('INTERNAL_ERROR', 'Something went wrong', 500)

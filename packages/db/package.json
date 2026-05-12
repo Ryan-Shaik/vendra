@@ -1,14 +1,14 @@
 {
   "name": "@vendra/db",
   "version": "0.0.1",
-  "main": "index.ts",
-  "types": "index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist",
     "prisma/schema.prisma"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && powershell -NoProfile -Command \"Copy-Item -Recurse -Force generated dist/generated\"",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",

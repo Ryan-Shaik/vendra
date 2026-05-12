@@ -86,7 +86,11 @@ export function createHandler<TInput = unknown>(
         let body: unknown = {}
         const contentType = req.headers.get('content-type') ?? ''
         if (contentType.includes('application/json')) {
-          body = await req.json().catch(() => ({}))
+          try {
+            body = await req.json()
+          } catch {
+            return errorResponse('Malformed JSON', 400)
+          }
         }
 
         const parsed = options.schema.safeParse(body)
