@@ -11,6 +11,8 @@
   "dependencies": {
     "@clerk/nextjs": "^7.3.3",
     "@vendra/db": "*",
+    "@vendra/types": "*",
+    "@vendra/services": "*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.38.0",

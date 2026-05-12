@@ -9,7 +9,7 @@ change.
 
 ## Current Goal
 
-- 1.3 Authentication (Clerk) with multi-role support: Implement user onboarding and role-based access control.
+- 1.5 Vendor Onboarding: Implement the step-by-step onboarding flow for new vendors.
 
 ## Completed
 
@@ -28,6 +28,20 @@ change.
   - [x] Created custom sign-in/sign-up pages and callback handlers
   - [x] Implemented Clerk webhook to sync user, vendor, and customer records to database
   - [x] Built admin service endpoints for role management and account deactivation
+- [x] 1.4 Shared service layer + API foundations:
+  - [x] Created `@vendra/types` package with `ServiceResult` and common Zod schemas
+  - [x] Created `@vendra/services` package with `createAction` and `createHandler` utilities
+  - [x] Enforced auth, role, validation, and vendor-scope resolution in base API utilities
+  - [x] Refactored `admin.service.ts` to follow the `{ data, error }` result pattern
+  - [x] Verified service-layer checklist on May 11, 2026:
+    - [x] `npx tsc -p packages/types/tsconfig.json --noEmit`
+    - [x] `npx tsc -p packages/services/tsconfig.json --noEmit`
+    - [x] Schema/result import smoke test for `CreateProductSchema`, `RegisterVendorSchema`, `ok`, and `err`
+    - [x] `ok({ id: '1' })` returned `{ data: { id: '1' }, error: null }`
+    - [x] `err('NOT_FOUND', 'Not found', 404)` returned `{ data: null, error: { code: 'NOT_FOUND', message: 'Not found', status: 404 } }`
+    - [x] No `any` or `z.any()` remains in shared type/service foundations or base handler utilities
+    - [x] `npm run build --workspace=@vendra/marketplace`
+    - [x] `npm run build --workspace=@vendra/admin`
 
 ## In Progress
 
@@ -35,8 +49,7 @@ change.
 
 ## Next Up
 
-- 1.4 Vendor Onboarding & Store Management
-
+- 1.5 Vendor Onboarding
 
 ## Open Questions
 
@@ -47,13 +60,13 @@ change.
 - Transitioning to monorepo structure (starting with `packages/db`) as specified in the database spec to support future `apps/admin`.
 - Tailwind v4 used without `tailwind.config.ts`; theme lives entirely in `app/globals.css`.
 - Shadcn 4 (Radix/Nova) initialized to support Tailwind v4 native mapping.
+- Implemented consistent `{ data, error }` pattern for all service logic and API boundaries.
 
 ## Session Notes
 
-- Phase 1, Unit 1.1 is 100% complete.
-- Build verified (Turbopack).
-- All custom project tokens (`bg-base`, `accent-primary`, etc.) are exposed as Tailwind utilities and mapped to Shadcn variables.
-- Database foundation upgraded to Prisma 7.8.0.
-- Implemented `prisma.config.ts` and `PrismaPg` adapter for enhanced performance and modern connection management.
-- Configured local `generated/` output for Prisma client to resolve monorepo hoisting and resolution issues.
-- Verified end-to-end connectivity and seeding.
+- Phase 1, Unit 1.4 checklist verification completed successfully.
+- Infrastructure established for consistent, secure, and type-safe API/Action development.
+- All future features will inherit built-in auth and validation checks via the new base utilities.
+- Direct `tsx` execution of Clerk-backed `createHandler()` / `createAction()` auth branches is not representative because Clerk `auth()` requires a Next server/request context and throws `server-only` outside that runtime. Wrapper behavior was reviewed statically and verified through successful app builds; route-level behavior should be covered by integration tests once the first concrete API/action consumers are added.
+- Fixed Clerk auth route placement on May 11, 2026: moved admin and marketplace sign-in/sign-up/callback/dashboard routes under their respective `app/(clerk)/` route groups so nested `<ClerkProvider>` wraps Clerk components without placing the provider in the root layout. Verified with successful marketplace and admin production builds.
+- Added the admin app root layout on May 11, 2026 so Next.js 16 has the required `<html>` and `<body>` tags while keeping Clerk scoped to the nested `(clerk)` layout. Verified with a successful admin production build.
