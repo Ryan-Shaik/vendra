@@ -1,7 +1,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { type ZodSchema } from 'zod'
 import { prisma } from '@vendra/db'
-import { type Role } from '@vendra/types'
+import { type Role, isRole } from '@vendra/types'
 import { errorResponse } from './response'
 
 interface HandlerOptions<TInput> {
@@ -16,7 +16,7 @@ interface HandlerOptions<TInput> {
 interface HandlerContext<TInput> {
   userId:     string | null
   vendorId?:  string
-  role?:      string
+  role?:      Role
   input:      TInput
   req:        Request
 }
@@ -28,8 +28,9 @@ type HandlerFn<TInput> = (
 function getRoleFromClaims(sessionClaims: unknown): Role | undefined {
   if (!sessionClaims || typeof sessionClaims !== 'object') return undefined
 
-  const claims = sessionClaims as { metadata?: { role?: Role } }
-  return claims.metadata?.role
+  const claims = sessionClaims as { metadata?: { role?: unknown } }
+  const role = claims.metadata?.role
+  return isRole(role) ? role : undefined
 }
 
 /**
@@ -54,7 +55,7 @@ export function createHandler<TInput = unknown>(
         const allowedRoles = Array.isArray(options.requireRole)
           ? options.requireRole
           : [options.requireRole]
-        if (!allowedRoles.includes(role as Role)) {
+        if (!role || !allowedRoles.includes(role)) {
           return errorResponse('Forbidden', 403)
         }
       }
@@ -86,7 +87,11 @@ export function createHandler<TInput = unknown>(
         let body: unknown = {}
         const contentType = req.headers.get('content-type') ?? ''
         if (contentType.includes('application/json')) {
-          body = await req.json().catch(() => ({}))
+          try {
+            body = await req.json()
+          } catch {
+            return errorResponse('Malformed JSON', 400)
+          }
         }
 
         const parsed = options.schema.safeParse(body)

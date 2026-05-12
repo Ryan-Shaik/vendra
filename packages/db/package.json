@@ -1,14 +1,15 @@
 {
   "name": "@vendra/db",
   "version": "0.0.1",
-  "main": "index.ts",
-  "types": "index.ts",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist",
     "prisma/schema.prisma"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && shx cp -r generated dist/generated",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
@@ -24,6 +25,7 @@
   "devDependencies": {
     "prisma": "^7.8.0",
     "@types/pg": "^8.11.0",
-    "tsx": "^4.0.0"
+    "tsx": "^4.0.0",
+    "shx": "^0.3.4"
   }
 }

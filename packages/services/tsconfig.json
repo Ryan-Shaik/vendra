@@ -8,10 +8,10 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "paths": {
-      "@vendra/db": ["../db"],
-      "@vendra/types": ["../types"]
-    }
+    "declaration": true,
+    "outDir": "dist",
+    "rootDir": "."
   },
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts"],
+  "exclude": ["dist"]
 }
