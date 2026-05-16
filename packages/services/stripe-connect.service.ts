@@ -54,6 +54,8 @@ export async function createConnectAccount(
       metadata: {
         vendorId,   // stored so webhook handler can identify the vendor
       },
+    }, {
+      idempotencyKey: `create-connect-account-${vendorId}`,
     })
 
     // Persist account ID immediately — before generating the link
