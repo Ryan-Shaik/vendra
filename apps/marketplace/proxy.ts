@@ -6,7 +6,11 @@ const isVendorRoute     = createRouteMatcher(['/vendor(.*)'])
 const isAccountRoute    = createRouteMatcher(['/account(.*)'])
 const isAuthCallback    = createRouteMatcher(['/auth/callback(.*)'])
 const isApiRoute        = createRouteMatcher(['/api(.*)'])
-const isWebhookRoute    = createRouteMatcher(['/api/webhooks/clerk(.*)'])
+const isPublicApiRoute  = createRouteMatcher([
+  '/api/webhooks/(.*)',
+  '/api/inngest(.*)',
+  '/api/uploadthing(.*)'
+])
 
 export default clerkMiddleware(async (auth, req) => {
   const { userId, sessionClaims } = await auth()
@@ -59,9 +63,9 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next()
   }
 
-  // ── Protected API routes (/api/* except webhook) ───────────────────────────
+  // ── Protected API routes (/api/* except public endpoints) ──────────────────
   // Requires: authenticated
-  if (isApiRoute(req) && !isWebhookRoute(req)) {
+  if (isApiRoute(req) && !isPublicApiRoute(req)) {
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
