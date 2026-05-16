@@ -881,6 +881,15 @@ import { redirect }          from 'next/navigation'
 import { getVendorByUserId } from '@vendra/services/vendor.service'
 import { ProfileForm }       from './_components/profile-form'
 
+interface ProfileFormProps {
+  defaultValues: {
+    storeName:    string
+    description:  string
+    logoUrl?:     string
+    returnPolicy?: string
+  }
+}
+
 export default async function OnboardingProfilePage() {
   const { userId } = await auth()
   if (!userId) redirect('/sign-in')
@@ -924,6 +933,11 @@ import { updateProfile }            from '../_actions/update-profile'
 import { cn }                       from '@/lib/utils'
 
 interface ProfileFormProps {
+  // - **Validation**:
+  // - Store Name: required, 3-50 chars.
+  // - Description: required, 10-500 chars.
+  // - Logo: required (must be uploaded via UploadThing).
+  // - Errors must be shown inline below each field.
   defaultValues: {
     storeName:    string
     description:  string

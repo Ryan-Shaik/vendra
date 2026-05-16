@@ -9,7 +9,7 @@ change.
 
 ## Current Goal
 
-- 1.7 Vendor Onboarding: Implement the step-by-step onboarding flow for new vendors.
+- [ ] 1.8 Vendor Onboarding: Implement the step-by-step onboarding flow for new vendors.
 
 ## Completed
 
@@ -66,7 +66,7 @@ change.
   - [x] Security review completed (cc-skill-security-review + backend-security-coder): no critical/high/medium findings
 
 - [x] 1.7 stripe integration:
-  - [x] Configured Stripe SDK and pinned API version (`2025-02-24.acacia`)
+  - [x] Configured Stripe SDK and **Stripe API**: `2026-04-22.dahlia` (Pinned)
   - [x] Created `packages/jobs` and configured Inngest client
   - [x] Added `stripe-connect.service.ts` for Stripe Connect operations using `ServiceResult` pattern
   - [x] Implemented `createStripeConnectAccountJob` with `inngest` for vendor approval workflow

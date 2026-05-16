@@ -14,12 +14,18 @@ function getEnv() {
 
 // Import stripe lazily to allow this service to be used in packages/
 // without requiring apps/marketplace/lib/stripe directly
+let stripeClient: Stripe | null = null
+
 function getStripe(): Stripe {
+  if (stripeClient) return stripeClient
+
   const env = getEnv()
-  return new Stripe(env.STRIPE_SECRET_KEY, {
+  stripeClient = new Stripe(env.STRIPE_SECRET_KEY, {
     apiVersion: '2026-04-22.dahlia',
     typescript: true,
   })
+
+  return stripeClient
 }
 
 /**

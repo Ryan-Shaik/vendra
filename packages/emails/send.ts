@@ -28,8 +28,13 @@ export async function sendEmail(
   options: SendEmailOptions,
 ): Promise<ServiceResult<{ id: string }>> {
   try {
+    const fromEmail = process.env.RESEND_FROM_EMAIL
+    if (!fromEmail) {
+      throw new Error('RESEND_FROM_EMAIL must be set to a valid email address')
+    }
+
     const { data, error } = await resend.emails.send({
-      from:    process.env.RESEND_FROM_EMAIL ?? 'onboarding@resend.dev',
+      from:    fromEmail,
       to:      options.to,
       subject: options.subject,
       react:   jsx(options.template, options.props),
@@ -42,7 +47,11 @@ export async function sendEmail(
       return err('EXTERNAL_SERVICE_ERROR', 'Failed to send email', 502)
     }
 
-    return ok({ id: data!.id })
+    if (!data || !data.id) {
+      return err('EXTERNAL_SERVICE_ERROR', 'Resend API returned success but no data id', 502)
+    }
+
+    return ok({ id: data.id })
   } catch (e) {
     console.error('[sendEmail] Unexpected error:', e)
     return err('INTERNAL_ERROR', 'Email service unavailable', 500)

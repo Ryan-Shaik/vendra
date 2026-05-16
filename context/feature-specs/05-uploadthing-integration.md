@@ -140,8 +140,7 @@ export const ourFileRouter = {
 
       const vendor = await prisma.vendor.findUnique({
         where:   { userId },
-        select:  { id: true, status: true },
-        include: { onboarding: { select: { isComplete: true } } },
+        select:  { id: true, status: true, onboarding: { select: { isComplete: true } } },
       })
       if (!vendor)                        throw new Error('Vendor not found')
       if (vendor.status !== 'approved')   throw new Error('Vendor not approved')

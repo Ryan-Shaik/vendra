@@ -185,11 +185,22 @@ import { ok, err, type ServiceResult } from '@vendra/types'
 
 // Import stripe lazily to allow this service to be used in packages/
 // without requiring apps/marketplace/lib/stripe directly
+let stripeClient: Stripe | null = null
+
 function getStripe(): Stripe {
-  return new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2025-02-24.acacia',
+  if (stripeClient) return stripeClient
+
+  const stripeSecretKey = process.env.STRIPE_SECRET_KEY
+  if (!stripeSecretKey) {
+    throw new Error('STRIPE_SECRET_KEY is required')
+  }
+
+  stripeClient = new Stripe(stripeSecretKey, {
+    apiVersion: '2026-04-22.dahlia',
     typescript: true,
   })
+
+  return stripeClient
 }
 
 /**

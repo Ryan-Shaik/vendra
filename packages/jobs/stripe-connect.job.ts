@@ -59,7 +59,7 @@ export const createStripeConnectAccountJob = inngest.createFunction(
         props: {
           storeName,
           vendorName,
-          dashboardUrl: linkResult.url,  // vendor goes to Stripe onboarding first
+          onboardingUrl: linkResult.url,  // vendor goes to Stripe onboarding first
         },
         tags: [
           { name: 'category', value: 'vendor-onboarding' },

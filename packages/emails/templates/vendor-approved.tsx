@@ -13,15 +13,15 @@ import {
 import * as React from 'react'
 
 interface VendorApprovedEmailProps {
-  storeName:    string
-  vendorName:   string
-  dashboardUrl: string
+  storeName:      string
+  vendorName:     string
+  onboardingUrl:  string
 }
 
 export function VendorApprovedEmail({
   storeName,
   vendorName,
-  dashboardUrl,
+  onboardingUrl,
 }: VendorApprovedEmailProps) {
   return (
     <Html>
@@ -37,7 +37,7 @@ export function VendorApprovedEmail({
             Complete your onboarding to start listing products and receiving orders.
           </Text>
           <Section style={{ marginTop: '24px' }}>
-            <Button href={dashboardUrl} style={styles.button}>
+            <Button href={onboardingUrl} style={styles.button}>
               Complete onboarding
             </Button>
           </Section>

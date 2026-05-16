@@ -11,12 +11,16 @@ function getEnv() {
 }
 // Import stripe lazily to allow this service to be used in packages/
 // without requiring apps/marketplace/lib/stripe directly
+let stripeClient = null;
 function getStripe() {
-    const env = getEnv();
-    return new Stripe(env.STRIPE_SECRET_KEY, {
-        apiVersion: '2026-04-22.dahlia',
-        typescript: true,
-    });
+    if (!stripeClient) {
+        const env = getEnv();
+        stripeClient = new Stripe(env.STRIPE_SECRET_KEY, {
+            apiVersion: '2026-04-22.dahlia',
+            typescript: true,
+        });
+    }
+    return stripeClient;
 }
 /**
  * Creates a Stripe Connect Express account for an approved vendor.
@@ -44,6 +48,8 @@ export async function createConnectAccount(vendorId, email) {
             metadata: {
                 vendorId, // stored so webhook handler can identify the vendor
             },
+        }, {
+            idempotencyKey: `create-connect-account-${vendorId}`,
         });
         // Persist account ID immediately — before generating the link
         // If link generation fails, the account ID is already saved

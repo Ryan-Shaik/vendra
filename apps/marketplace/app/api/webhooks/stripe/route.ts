@@ -50,10 +50,15 @@ export async function POST(req: Request) {
                                         'onboarding'
 
         // Update vendor Stripe Connect status
-        await prisma.vendor.updateMany({
+        const updateResult = await prisma.vendor.updateMany({
           where: { id: vendorId },
           data:  { stripeConnectStatus },
         })
+
+        if (updateResult.count === 0) {
+          console.warn(`[stripe webhook] account.updated: no vendor found with id ${vendorId}`)
+          break
+        }
 
         // If the account is now active, mark the Stripe onboarding step complete
         if (isActive) {

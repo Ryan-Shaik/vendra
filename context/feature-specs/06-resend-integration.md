@@ -9,13 +9,13 @@
 ## Objective
 
 Set up Resend and React Email as the transactional email system for the platform.
-All 14 email templates are created here as stubs — full content is filled in
+All 13 email templates are created here as stubs — full content is filled in
 as each feature spec is implemented.
 
 The output of this spec is:
 - A `packages/emails` shared package with a `sendEmail()` wrapper
 - A Resend client singleton
-- 14 typed React Email template stubs
+- 13 typed React Email template stubs
 - A barrel export so both apps import cleanly from `@vendra/emails`
 - A live preview server for developing templates
 
@@ -206,21 +206,22 @@ At this stage, write complete markup only for `vendor-approved.tsx` —
 the rest are stubs with minimal placeholder content.
 Full content for each template is completed in the relevant feature spec.
 
-```
-packages/emails/templates/
-  vendor-approved.tsx         ← Complete — used immediately in Vendor Onboarding spec
-  vendor-rejected.tsx         ← Stub
-  vendor-suspended.tsx        ← Stub
-  vendor-new-order.tsx        ← Stub
-  vendor-payout-released.tsx  ← Stub
-  vendor-payout-held.tsx      ← Stub
-  order-confirmation.tsx      ← Stub
-  order-shipped.tsx           ← Stub
-  order-delivered.tsx         ← Stub
-  dispute-opened.tsx          ← Stub
-  dispute-resolved.tsx        ← Stub
-  customer-welcome.tsx        ← Stub
-  admin-role-changed.tsx      ← Stub
+```text
+packages/emails/
+├── templates/
+│   ├── vendor-approved.tsx      # Canonical markup
+│   ├── vendor-rejected.tsx      # Stub
+│   ├── vendor-onboarding.tsx    # Stub
+│   ├── product-approved.tsx     # Stub
+│   ├── product-rejected.tsx     # Stub
+│   ├── order-confirmation.tsx   # Stub
+│   ├── order-shipped.tsx        # Stub
+│   ├── order-delivered.tsx      # Stub
+│   ├── payout-processed.tsx     # Stub
+│   ├── dispute-opened.tsx       # Stub
+│   ├── dispute-resolved.tsx     # Stub
+│   ├── welcome-customer.tsx     # Stub
+│   └── password-reset.tsx       # Stub
 ```
 
 ### Complete template — `packages/emails/templates/vendor-approved.tsx`
@@ -241,15 +242,15 @@ import {
 import * as React from 'react'
 
 interface VendorApprovedEmailProps {
-  storeName:    string
-  vendorName:   string
-  dashboardUrl: string
+  storeName:      string
+  vendorName:     string
+  onboardingUrl:  string
 }
 
 export function VendorApprovedEmail({
   storeName,
   vendorName,
-  dashboardUrl,
+  onboardingUrl,
 }: VendorApprovedEmailProps) {
   return (
     <Html>
@@ -265,7 +266,7 @@ export function VendorApprovedEmail({
             Complete your onboarding to start listing products and receiving orders.
           </Text>
           <Section style={{ marginTop: '24px' }}>
-            <Button href={dashboardUrl} style={styles.button}>
+            <Button href={onboardingUrl} style={styles.button}>
               Complete onboarding
             </Button>
           </Section>
@@ -361,23 +362,6 @@ export function vendorRejectedSubject(storeName: string): string {
 }
 ```
 
-**Props for each stub template:**
-
-| Template | Props |
-|----------|-------|
-| `vendor-rejected` | `storeName`, `vendorName`, `reason` |
-| `vendor-suspended` | `storeName`, `vendorName`, `reason` |
-| `vendor-new-order` | `storeName`, `orderId`, `orderTotal`, `itemCount`, `dashboardUrl` |
-| `vendor-payout-released` | `storeName`, `vendorName`, `amount`, `period`, `dashboardUrl` |
-| `vendor-payout-held` | `storeName`, `vendorName`, `amount`, `reason`, `contactUrl` |
-| `order-confirmation` | `orderId`, `customerName`, `items`, `total`, `trackingUrl` |
-| `order-shipped` | `orderId`, `customerName`, `carrier`, `trackingNumber`, `trackingUrl` |
-| `order-delivered` | `orderId`, `customerName`, `reviewUrl` |
-| `dispute-opened` | `orderId`, `disputeId`, `raisedBy`, `reason` |
-| `dispute-resolved` | `orderId`, `disputeId`, `resolutionType`, `resolutionNote` |
-| `customer-welcome` | `customerName` |
-| `admin-role-changed` | `recipientName`, `oldRole`, `newRole` |
-
 ---
 
 ## Step 7 — Barrel export
@@ -390,58 +374,19 @@ export { resend }    from './client'
 export { sendEmail } from './send'
 
 // Templates
-export {
-  VendorApprovedEmail,
-  vendorApprovedSubject,
-} from './templates/vendor-approved'
-export {
-  VendorRejectedEmail,
-  vendorRejectedSubject,
-} from './templates/vendor-rejected'
-export {
-  VendorSuspendedEmail,
-  vendorSuspendedSubject,
-} from './templates/vendor-suspended'
-export {
-  VendorNewOrderEmail,
-  vendorNewOrderSubject,
-} from './templates/vendor-new-order'
-export {
-  VendorPayoutReleasedEmail,
-  vendorPayoutReleasedSubject,
-} from './templates/vendor-payout-released'
-export {
-  VendorPayoutHeldEmail,
-  vendorPayoutHeldSubject,
-} from './templates/vendor-payout-held'
-export {
-  OrderConfirmationEmail,
-  orderConfirmationSubject,
-} from './templates/order-confirmation'
-export {
-  OrderShippedEmail,
-  orderShippedSubject,
-} from './templates/order-shipped'
-export {
-  OrderDeliveredEmail,
-  orderDeliveredSubject,
-} from './templates/order-delivered'
-export {
-  DisputeOpenedEmail,
-  disputeOpenedSubject,
-} from './templates/dispute-opened'
-export {
-  DisputeResolvedEmail,
-  disputeResolvedSubject,
-} from './templates/dispute-resolved'
-export {
-  CustomerWelcomeEmail,
-  customerWelcomeSubject,
-} from './templates/customer-welcome'
-export {
-  AdminRoleChangedEmail,
-  adminRoleChangedSubject,
-} from './templates/admin-role-changed'
+export { VendorApprovedEmail, vendorApprovedSubject } from './templates/vendor-approved'
+export { VendorRejectedEmail, vendorRejectedSubject } from './templates/vendor-rejected'
+export { VendorOnboardingEmail, vendorOnboardingSubject } from './templates/vendor-onboarding'
+export { ProductApprovedEmail, productApprovedSubject } from './templates/product-approved'
+export { ProductRejectedEmail, productRejectedSubject } from './templates/product-rejected'
+export { OrderConfirmationEmail, orderConfirmationSubject } from './templates/order-confirmation'
+export { OrderShippedEmail, orderShippedSubject } from './templates/order-shipped'
+export { OrderDeliveredEmail, orderDeliveredSubject } from './templates/order-delivered'
+export { PayoutProcessedEmail, payoutProcessedSubject } from './templates/payout-processed'
+export { DisputeOpenedEmail, disputeOpenedSubject } from './templates/dispute-opened'
+export { DisputeResolvedEmail, disputeResolvedSubject } from './templates/dispute-resolved'
+export { WelcomeCustomerEmail, welcomeCustomerSubject } from './templates/welcome-customer'
+export { PasswordResetEmail, passwordResetSubject } from './templates/password-reset'
 ```
 
 ---
@@ -477,9 +422,9 @@ All of the following must pass before marking this unit complete in `progress-tr
     subject:  'Test email',
     template: VendorApprovedEmail,
     props: {
-      storeName:    'Test Store',
-      vendorName:   'Test User',
-      dashboardUrl: 'http://localhost:3000/vendor/dashboard',
+      storeName:     'Test Store',
+      vendorName:    'Test User',
+      onboardingUrl: 'http://localhost:3000/onboarding',
     },
   })
   // data.id should be a Resend email ID string
@@ -489,7 +434,7 @@ All of the following must pass before marking this unit complete in `progress-tr
       with an invalid API key — not a thrown exception
 - [ ] `npm run email:preview` opens at `http://localhost:3002` and renders
       the `VendorApprovedEmail` template correctly
-- [ ] All 13 template files exist — stubs are acceptable for all except `vendor-approved`
+- [ ] 13 templates defined in `templates/` (stubs + canonical markup)
 - [ ] All template files export both a component and a subject helper function
 - [ ] `npm run build` passes in `apps/marketplace` and `apps/admin`
 - [ ] `progress-tracker.md` Resend sub-task checked off
