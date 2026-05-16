@@ -11,8 +11,10 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.3.3",
     "@vendra/db": "*",
     "@vendra/types": "*",
-    "@clerk/nextjs": "^7.3.3"
+    "stripe": "^22.1.1",
+    "zod": "^4.4.3"
   }
 }

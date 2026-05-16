@@ -9,7 +9,7 @@ change.
 
 ## Current Goal
 
-- 1.5 Vendor Onboarding: Implement the step-by-step onboarding flow for new vendors.
+- 1.7 Vendor Onboarding: Implement the step-by-step onboarding flow for new vendors.
 
 ## Completed
 
@@ -42,6 +42,38 @@ change.
     - [x] No `any` or `z.any()` remains in shared type/service foundations or base handler utilities
     - [x] `npm run build --workspace=@vendra/marketplace`
     - [x] `npm run build --workspace=@vendra/admin`
+- [x] 1.5 UploadThing Integration:
+  - [x] Installed `uploadthing` and `@uploadthing/react`
+  - [x] Configured `UPLOADTHING_TOKEN` in env vars and `env.ts`
+  - [x] Created `core.ts` file router with auth middleware (fixed Prisma select/include conflict)
+  - [x] Created `route.ts` API handler
+  - [x] Added `NextSSRPlugin` to `(clerk)/layout.tsx`
+  - [x] Exported typed components in `lib/uploadthing.ts`
+  - [x] Verified successful production build
+- [x] 1.6 Resend + React Email Integration:
+  - [x] Created `packages/emails` shared package with `package.json`, `tsconfig.json`
+  - [x] Implemented Resend client singleton (`client.ts`) with globalThis hot-reload guard
+  - [x] Implemented `sendEmail()` wrapper (`send.ts`) using `ServiceResult` pattern — never throws
+  - [x] Created complete `vendor-approved.tsx` template with full styling
+  - [x] Created 12 stub templates with typed props and subject helpers
+  - [x] Created barrel export (`index.ts`) exposing all templates and core functions
+  - [x] Added `@vendra/emails` workspace dependency to both `apps/marketplace` and `apps/admin`
+  - [x] Added `RESEND_API_KEY` and `RESEND_FROM_EMAIL` to Zod env schemas in both apps
+  - [x] Updated root `.env`, app `.env.local` files, and `.env.example` with Resend variables
+  - [x] `npx tsc -p packages/emails/tsconfig.json --noEmit` — zero errors
+  - [x] `npm run build --workspace=@vendra/marketplace` — successful
+  - [x] `npm run build --workspace=@vendra/admin` — successful
+  - [x] Security review completed (cc-skill-security-review + backend-security-coder): no critical/high/medium findings
+
+- [x] 1.7 stripe integration:
+  - [x] Configured Stripe SDK and pinned API version (`2025-02-24.acacia`)
+  - [x] Created `packages/jobs` and configured Inngest client
+  - [x] Added `stripe-connect.service.ts` for Stripe Connect operations using `ServiceResult` pattern
+  - [x] Implemented `createStripeConnectAccountJob` with `inngest` for vendor approval workflow
+  - [x] Created Inngest API route handler `apps/marketplace/app/api/inngest/route.ts`
+  - [x] Created Stripe webhook handler for `account.updated` events in `apps/marketplace/app/api/webhooks/stripe/route.ts`
+  - [x] Updated environment variables with Stripe credentials in `.env.local`, `.env.example`, and `lib/env.ts`
+  - [x] Note: Replaced `workspace:*` with `*` for npm workspace compatibility in `@vendra/jobs/package.json`
 
 ## In Progress
 
@@ -49,7 +81,7 @@ change.
 
 ## Next Up
 
-- 1.5 Vendor Onboarding
+- 1.8 vendor-onboarding
 
 ## Open Questions
 
@@ -77,3 +109,5 @@ change.
 - Fixed `isPromotion` logic in `admin.service.ts` and refined audit logging to exclude redundant equal-role transitions.
 - Configured `packages/db`, `packages/services`, and `packages/types` with `"type": "module"` for consistent ESM support.
 - Synchronized `getRoleFromClaims` hardening across `apps/admin` and `apps/marketplace` route handlers.
+- Completed 1.5 UploadThing Integration. Fixed a Prisma type error where `select` and `include` were used together in the `vendor` query for `productImages` endpoint by combining them into a single `select`.
+- Completed 1.6 Resend + React Email Integration on May 13, 2026. Created `packages/emails` package with Resend client singleton, centralized `sendEmail()` wrapper using `ServiceResult` pattern, 1 complete template (`vendor-approved`) and 12 stubs. Security review passed with no critical/high/medium findings. Both apps build successfully with the new workspace dependency. Note: the spec used `workspace:*` protocol (pnpm syntax) but the project uses npm workspaces, so `*` was used instead — consistent with all other workspace references.

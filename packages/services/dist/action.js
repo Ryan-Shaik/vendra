@@ -1,11 +1,12 @@
 'use server';
 import { auth } from '@clerk/nextjs/server';
-import { err } from '@vendra/types';
+import { err, isRole } from '@vendra/types';
 function getRoleFromClaims(sessionClaims) {
     if (!sessionClaims || typeof sessionClaims !== 'object')
         return undefined;
     const claims = sessionClaims;
-    return claims.metadata?.role;
+    const role = claims.metadata?.role;
+    return isRole(role) ? role : undefined;
 }
 /**
  * Wraps a Server Action with auth, role enforcement, and input validation.
@@ -24,11 +25,14 @@ export function createAction(options, fn) {
             }
             const role = getRoleFromClaims(sessionClaims);
             // 2. Enforce role
+            if (!role) {
+                return err('FORBIDDEN', 'Role missing from session', 403);
+            }
             if (options.requireRole) {
                 const allowedRoles = Array.isArray(options.requireRole)
                     ? options.requireRole
                     : [options.requireRole];
-                if (!role || !allowedRoles.includes(role)) {
+                if (!allowedRoles.includes(role)) {
                     return err('FORBIDDEN', 'You do not have permission', 403);
                 }
             }
@@ -38,7 +42,7 @@ export function createAction(options, fn) {
                 return err('VALIDATION_ERROR', 'Invalid input', 400, parsed.error.flatten());
             }
             // 4. Call the service
-            return await fn({ userId, role: role, input: parsed.data });
+            return await fn({ userId, role, input: parsed.data });
         }
         catch (error) {
             console.error('[createAction] Unhandled error:', error);

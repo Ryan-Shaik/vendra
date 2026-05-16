@@ -5,7 +5,7 @@ export const CreateOrderSchema = z.object({
     addressId: IdSchema.optional(), // authenticated customer
     shippingAddress: AddressInputSchema.optional(), // guest or new address
     guestEmail: z.string().email().optional(),
-}).refine((data) => data.addressId || data.shippingAddress, { message: 'Either addressId or shippingAddress must be provided' });
+}).refine((data) => Boolean(data.addressId) !== Boolean(data.shippingAddress), { message: 'Exactly one of addressId or shippingAddress must be provided' });
 export const ListOrdersSchema = PaginationSchema.extend({
     vendorId: IdSchema.optional(),
     status: z.enum([
