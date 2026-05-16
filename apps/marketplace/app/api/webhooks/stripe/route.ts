@@ -57,11 +57,12 @@ export async function POST(req: Request) {
 
         // If the account is now active, mark the Stripe onboarding step complete
         if (isActive) {
-          // Use the result of the update to atomically check the status
+          // Use the result of the upsert to atomically check the status
           // of all onboarding flags, avoiding a read-before-write race condition
-          const updatedOnboarding = await prisma.vendorOnboarding.update({
+          const updatedOnboarding = await prisma.vendorOnboarding.upsert({
             where: { vendorId },
-            data:  { stripeComplete: true },
+            create: { vendorId, stripeComplete: true },
+            update: { stripeComplete: true },
           })
 
           if (
