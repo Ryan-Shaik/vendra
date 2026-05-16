@@ -1,0 +1,11 @@
+{
+  "name": "@vendra/jobs",
+  "version": "0.0.1",
+  "main": "./index.ts",
+  "dependencies": {
+    "inngest":       "^3.0.0",
+    "@vendra/db":    "*",
+    "@vendra/types": "*",
+    "@vendra/emails": "*"
+  }
+}
