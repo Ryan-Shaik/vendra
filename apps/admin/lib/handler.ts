@@ -45,7 +45,17 @@ export function createHandler<TInput = unknown>(
     try {
       // 1. Authenticate
       const { userId, sessionClaims } = await auth()
-      const role = getRoleFromClaims(sessionClaims)
+      let role = getRoleFromClaims(sessionClaims)
+
+      if (userId && !role) {
+        const user = await prisma.user.findUnique({
+          where: { clerkId: userId },
+          select: { role: true },
+        })
+        if (isRole(user?.role)) {
+          role = user.role
+        }
+      }
 
       // 2. Enforce role if required
       if (options.requireRole) {

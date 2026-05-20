@@ -73,8 +73,9 @@ export async function POST(req: Request) {
         }
 
         if (role === 'vendor') {
-          // Vendor record created with pending status
+          // Vendor record created with pending status (or approved in dev for onboarding testing)
           // storeSlug will be set during onboarding — use clerkId as temp placeholder
+          const devStatus = process.env.NODE_ENV === 'development' ? 'approved' : 'pending'
           await prisma.vendor.upsert({
             where:  { userId: user.id },
             update: {},
@@ -82,7 +83,7 @@ export async function POST(req: Request) {
               userId:    user.id,
               storeName: '',                    // set during onboarding
               storeSlug: `pending-${user.id}`,  // replaced during onboarding
-              status:    'pending',
+              status:    devStatus,
               onboarding: {
                 create: {
                   profileComplete:  false,

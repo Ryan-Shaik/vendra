@@ -1,6 +1,4 @@
 @import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -57,7 +55,7 @@
   --chart-5: #6B6B67;
 }
 
-@theme inline {
+@theme {
   /* Project color tokens → Tailwind utility classes */
   --color-bg-base:              var(--bg-base);
   --color-bg-surface:           var(--bg-surface);

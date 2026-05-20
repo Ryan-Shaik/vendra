@@ -2,14 +2,14 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 
 // Define all protected route patterns explicitly
-const isVendorRoute     = createRouteMatcher(['/vendor(.*)'])
-const isAccountRoute    = createRouteMatcher(['/account(.*)'])
-const isAuthCallback    = createRouteMatcher(['/auth/callback(.*)'])
-const isApiRoute        = createRouteMatcher(['/api(.*)'])
-const isPublicApiRoute  = createRouteMatcher([
+const isVendorRoute    = createRouteMatcher(['/vendor(.*)'])
+const isAccountRoute   = createRouteMatcher(['/account(.*)'])
+const isAuthCallback   = createRouteMatcher(['/auth/callback(.*)'])
+const isApiRoute       = createRouteMatcher(['/api(.*)'])
+const isPublicApiRoute = createRouteMatcher([
   '/api/webhooks/(.*)',
   '/api/inngest(.*)',
-  '/api/uploadthing(.*)'
+  '/api/uploadthing(.*)',
 ])
 
 export default clerkMiddleware(async (auth, req) => {
@@ -31,11 +31,19 @@ export default clerkMiddleware(async (auth, req) => {
         new URL(process.env.NEXT_PUBLIC_ADMIN_URL ?? 'https://admin.vendra.com')
       )
     }
-    if (role !== 'vendor') {
-      // Authenticated but wrong role (e.g. customer) — back to homepage
+    // ── Race condition guard ────────────────────────────────────────────────
+    // After sign-up the session token may not yet carry the role claim because
+    // the user.created webhook (which sets publicMetadata.role) fires async
+    // AFTER Clerk redirects the user to /auth/callback. An authenticated user
+    // without a role claim is given the benefit of the doubt here — the page
+    // itself re-validates via DB lookup (see auth/callback/page.tsx) and will
+    // redirect them away if they genuinely lack the vendor role.
+    if (role !== 'vendor' && role !== undefined) {
+      // role is explicitly set to something else (e.g. 'customer') — block
       return NextResponse.redirect(new URL('/', req.url))
     }
-    // Authenticated vendor — let them through (onboarding gate enforced in page)
+    // role === 'vendor' OR role === undefined (freshly signed-up, token not yet updated)
+    // Let them through — page-level auth re-validates from DB
     return NextResponse.next()
   }
 

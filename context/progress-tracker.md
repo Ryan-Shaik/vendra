@@ -9,7 +9,7 @@ change.
 
 ## Current Goal
 
-- [ ] 1.8 Vendor Onboarding: Implement the step-by-step onboarding flow for new vendors.
+- [ ] 1.9 Vendor Dashboard: Implement the main dashboard view for approved vendors.
 
 ## Completed
 
@@ -64,8 +64,7 @@ change.
   - [x] `npm run build --workspace=@vendra/marketplace` — successful
   - [x] `npm run build --workspace=@vendra/admin` — successful
   - [x] Security review completed (cc-skill-security-review + backend-security-coder): no critical/high/medium findings
-
-- [x] 1.7 stripe integration:
+- [x] 1.7 Stripe integration:
   - [x] Configured Stripe SDK and **Stripe API**: `2026-04-22.dahlia` (Pinned)
   - [x] Created `packages/jobs` and configured Inngest client
   - [x] Added `stripe-connect.service.ts` for Stripe Connect operations using `ServiceResult` pattern
@@ -74,6 +73,15 @@ change.
   - [x] Created Stripe webhook handler for `account.updated` events in `apps/marketplace/app/api/webhooks/stripe/route.ts`
   - [x] Updated environment variables with Stripe credentials in `.env.local`, `.env.example`, and `lib/env.ts`
   - [x] Note: Replaced `workspace:*` with `*` for npm workspace compatibility in `@vendra/jobs/package.json`
+- [x] 1.8 Vendor Onboarding:
+  - [x] Implemented vendor status pages (`pending`, `rejected`, `suspended`) with informative UI
+  - [x] Created strict step-by-step onboarding layout with locked/clickable progress bar
+  - [x] Step 1 (Profile): Auto-slug generation, store name/description/logo capture
+  - [x] Step 2 (Shipping): Full CRUD for zones with location array and minimum required validation
+  - [x] Step 3 (Connect): Stripe callback listener with automated `isComplete` resolution
+  - [x] Developed robust shared service methods for state changes enforcing `vendorId` security bounds
+  - [x] Secured all APIs via `createAction` restricting paths exclusively to `vendor` role
+  - [x] Successfully verified production build for `@vendra/marketplace`
 
 ## In Progress
 
@@ -81,7 +89,7 @@ change.
 
 ## Next Up
 
-- 1.8 vendor-onboarding
+- 1.9 Vendor Dashboard
 
 ## Open Questions
 
@@ -111,3 +119,8 @@ change.
 - Synchronized `getRoleFromClaims` hardening across `apps/admin` and `apps/marketplace` route handlers.
 - Completed 1.5 UploadThing Integration. Fixed a Prisma type error where `select` and `include` were used together in the `vendor` query for `productImages` endpoint by combining them into a single `select`.
 - Completed 1.6 Resend + React Email Integration on May 13, 2026. Created `packages/emails` package with Resend client singleton, centralized `sendEmail()` wrapper using `ServiceResult` pattern, 1 complete template (`vendor-approved`) and 12 stubs. Security review passed with no critical/high/medium findings. Both apps build successfully with the new workspace dependency. Note: the spec used `workspace:*` protocol (pnpm syntax) but the project uses npm workspaces, so `*` was used instead — consistent with all other workspace references.
+- Systematic debugging session on May 18, 2026: Diagnosed and resolved a race condition during vendor sign-up where Clerk immediately redirects to `/auth/callback` before the async `user.created` webhook completes DB insertion. Implemented instant DB upserts in `AuthCallbackPage` using Clerk's `clerkClient().users.getUser(userId)` and added local development auto-approval (`status = process.env.NODE_ENV === 'development' ? 'approved' : 'pending'`) in both `AuthCallbackPage` and `route.ts`. Updated existing pending vendors to approved to enable instant testing of the onboarding flow (`/vendor/onboarding/profile`). Migrated `<ClerkProvider>` and UploadThing `<NextSSRPlugin>` to root `apps/marketplace/app/layout.tsx` to enable Clerk auth components (`Show`, `UserButton`) across all routes including the root storefront.
+- Fixed storefront and vendor onboarding CSS rendering on May 18, 2026: Replaced alpha `@theme inline` syntax with official `@theme` directive in `globals.css` and cleaned up all arbitrary variable classes (`bg-[--accent-primary]`, `border-[--border-default]`, etc.) across `page.tsx` and all vendor onboarding/status routes to use standard, clean Tailwind v4 utility classes (`bg-accent-primary`, `border-border`, `bg-card`). Verified successful TypeScript compilation with zero errors.
+- Added database role fallback to Server Action (`createAction`) and Route Handler (`createHandler`) wrappers on May 18, 2026: Solved Clerk session token propagation delay right after vendor sign up where the browser session token cookie does not yet carry `metadata.role`. If `sessionClaims.metadata.role` is missing but `userId` is present, the wrappers now perform a direct database query for the user's role, ensuring seamless Server Action execution without false `403 Forbidden` errors.
+- Resolved RSC boundary serialization error for `Prisma.Decimal` on May 18, 2026: Added `serializeShippingZone` helper in `vendor.service.ts` to convert `baseRate` and `freeAbove` decimal objects to plain JavaScript numbers before returning from service methods (`getShippingZones`, `createShippingZone`, `updateShippingZone`), preventing Next.js Client Component prop serialization failures (`Only plain objects can be passed to Client Components from Server Components. Decimal objects are not supported`). Also added defensive mapping in `OnboardingShippingPage`.
+- Implemented just-in-time (JIT) Stripe Connect Express account creation on May 18, 2026: Updated `getOnboardingLink` Server Action in Step 3 of vendor onboarding so that if the background Inngest workflow hasn't executed or is not running locally (`vendor.stripeConnectAccountId` is missing), the action immediately fetches the user's email from the database, calls `createConnectAccount` on the spot, saves the ID, and instantly redirects the vendor to Stripe's secure onboarding flow.

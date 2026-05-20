@@ -1,11 +1,12 @@
 import { SignUp } from '@clerk/nextjs'
 
 interface Props {
-  searchParams: { intent?: string }
+  searchParams: Promise<{ intent?: string }>
 }
 
-export default function SignUpPage({ searchParams }: Props) {
-  const isVendor = searchParams.intent === 'vendor'
+export default async function SignUpPage({ searchParams }: Props) {
+  const { intent } = await searchParams
+  const isVendor = intent === 'vendor'
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-bg-base">

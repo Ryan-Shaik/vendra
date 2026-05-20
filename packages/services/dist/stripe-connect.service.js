@@ -13,13 +13,13 @@ function getEnv() {
 // without requiring apps/marketplace/lib/stripe directly
 let stripeClient = null;
 function getStripe() {
-    if (!stripeClient) {
-        const env = getEnv();
-        stripeClient = new Stripe(env.STRIPE_SECRET_KEY, {
-            apiVersion: '2026-04-22.dahlia',
-            typescript: true,
-        });
-    }
+    if (stripeClient)
+        return stripeClient;
+    const env = getEnv();
+    stripeClient = new Stripe(env.STRIPE_SECRET_KEY, {
+        apiVersion: '2026-04-22.dahlia',
+        typescript: true,
+    });
     return stripeClient;
 }
 /**

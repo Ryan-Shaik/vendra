@@ -1,4 +1,3 @@
-'use server';
 import { auth } from '@clerk/nextjs/server';
 import { err, isRole } from '@vendra/types';
 function getRoleFromClaims(sessionClaims) {
@@ -23,7 +22,18 @@ export function createAction(options, fn) {
             if (!userId) {
                 return err('UNAUTHORIZED', 'You must be signed in', 401);
             }
-            const role = getRoleFromClaims(sessionClaims);
+            let role = getRoleFromClaims(sessionClaims);
+            // Fallback: if session claims haven't refreshed in the browser yet, check DB directly
+            if (!role) {
+                const { prisma } = await import('@vendra/db');
+                const user = await prisma.user.findUnique({
+                    where: { clerkId: userId },
+                    select: { role: true },
+                });
+                if (isRole(user?.role)) {
+                    role = user.role;
+                }
+            }
             // 2. Enforce role
             if (!role) {
                 return err('FORBIDDEN', 'Role missing from session', 403);

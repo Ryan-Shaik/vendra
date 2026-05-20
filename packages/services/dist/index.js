@@ -8,3 +8,4 @@ export * from './customer.service';
 export * from './admin.service';
 export * from './notification.service';
 export * from './action';
+export * from './stripe-connect.service';
