@@ -76,8 +76,8 @@ export async function POST(req: Request) {
             updatedOnboarding.stripeComplete   &&
             !updatedOnboarding.isComplete
           ) {
-            await prisma.vendorOnboarding.update({
-              where: { vendorId },
+            await prisma.vendorOnboarding.updateMany({
+              where: { vendorId, isComplete: false },
               data:  { isComplete: true, completedAt: new Date() },
             })
 

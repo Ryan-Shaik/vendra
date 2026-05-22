@@ -12,8 +12,8 @@ async function approvedVendorMiddleware() {
   const { userId } = await auth()
   if (!userId) throw new Error('Unauthorized')
 
-  const vendor = await prisma.vendor.findUnique({
-    where:  { userId },
+  const vendor = await prisma.vendor.findFirst({
+    where:  { user: { clerkId: userId } },
     select: { id: true, status: true },
   })
 
@@ -31,8 +31,8 @@ async function activeVendorMiddleware() {
   const { userId } = await auth()
   if (!userId) throw new Error('Unauthorized')
 
-  const vendor = await prisma.vendor.findUnique({
-    where:  { userId },
+  const vendor = await prisma.vendor.findFirst({
+    where:  { user: { clerkId: userId } },
     select: { id: true, status: true, onboarding: { select: { isComplete: true } } },
   })
 

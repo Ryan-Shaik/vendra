@@ -1694,41 +1694,41 @@ export default async function VendorDashboardPage() {
 All of the following must pass before marking this unit complete in `progress-tracker.md`:
 
 **Vendor registration:**
-- [ ] Signing up via `?intent=vendor` creates `User` (role: vendor), `Vendor` (status: pending), and `VendorOnboarding` (all flags false) in the database
-- [ ] Logging in as a pending vendor redirects to `/vendor/pending`
-- [ ] The pending page shows the vendor's store name (if set) and the review timeline
+- [x] Signing up via `?intent=vendor` creates `User` (role: vendor), `Vendor` (status: pending), and `VendorOnboarding` (all flags false) in the database
+- [x] Logging in as a pending vendor redirects to `/vendor/pending`
+- [x] The pending page shows the vendor's store name (if set) and the review timeline
 
 **Onboarding step ordering:**
-- [ ] Visiting `/vendor/onboarding/shipping` without completing profile redirects back to `/vendor/onboarding/profile`
-- [ ] Visiting `/vendor/onboarding/connect` without completing shipping redirects back to `/vendor/onboarding/shipping`
-- [ ] Step 2 node in the progress bar is non-clickable (locked) until profile is complete
-- [ ] Step 3 node in the progress bar is non-clickable (locked) until shipping is complete
+- [x] Visiting `/vendor/onboarding/shipping` without completing profile redirects back to `/vendor/onboarding/profile`
+- [x] Visiting `/vendor/onboarding/connect` without completing shipping redirects back to `/vendor/onboarding/shipping`
+- [x] Step 2 node in the progress bar is non-clickable (locked) until profile is complete
+- [x] Step 3 node in the progress bar is non-clickable (locked) until shipping is complete
 
 **Step 1 — Profile:**
-- [ ] Submitting with just name and description (no logo) sets `profileComplete = true` and redirects to `/vendor/onboarding/shipping`
-- [ ] Submitting with a logo URL saves `logoUrl` to the `Vendor` record
-- [ ] Store slug is auto-generated from the store name (`"Artisan Co."` → `"artisan-co"`)
-- [ ] A duplicate store name returns a `409 CONFLICT` error displayed in the form
-- [ ] Validation errors (name too short, description too short) are shown inline
+- [x] Submitting with just name and description (no logo) sets `profileComplete = true` and redirects to `/vendor/onboarding/shipping`
+- [x] Submitting with a logo URL saves `logoUrl` to the `Vendor` record
+- [x] Store slug is auto-generated from the store name (`"Artisan Co."` → `"artisan-co"`)
+- [x] A duplicate store name returns a `409 CONFLICT` error displayed in the form
+- [x] Validation errors (name too short, description too short) are shown inline
 
 **Step 2 — Shipping:**
-- [ ] Adding a zone creates a `ShippingZone` record and shows it in the list
-- [ ] The zone card shows the rate and free-shipping threshold
-- [ ] Deleting the only zone shows an error — cannot have zero zones
-- [ ] Clicking "Save and continue" with at least one zone sets `shippingComplete = true` and redirects to `/vendor/onboarding/connect`
+- [x] Adding a zone creates a `ShippingZone` record and shows it in the list
+- [x] The zone card shows the rate and free-shipping threshold
+- [x] Deleting the only zone shows an error — cannot have zero zones
+- [x] Clicking "Save and continue" with at least one zone sets `shippingComplete = true` and redirects to `/vendor/onboarding/connect`
 
 **Step 3 — Stripe Connect:**
-- [ ] Clicking "Connect with Stripe" generates a fresh onboarding link and redirects to Stripe
-- [ ] After completing Stripe onboarding and returning to `/vendor/onboarding/connect/callback`, the page checks status from Stripe
-- [ ] If Stripe account is active: `stripeComplete = true`, `isComplete = true`, redirect to `/vendor/dashboard`
-- [ ] If Stripe account has outstanding requirements: the status page is shown with a "Complete Stripe requirements" button
-- [ ] The refresh URL (`?refresh=true`) shows a session expired message
+- [x] Clicking "Connect with Stripe" generates a fresh onboarding link and redirects to Stripe
+- [x] After completing Stripe onboarding and returning to `/vendor/onboarding/connect/callback`, the page checks status from Stripe
+- [x] If Stripe account is active: `stripeComplete = true`, `isComplete = true`, redirect to `/vendor/dashboard`
+- [x] If Stripe account has outstanding requirements: the status page is shown with a "Complete Stripe requirements" button
+- [x] The refresh URL (`?refresh=true`) shows a session expired message
 
 **Full onboarding complete:**
-- [ ] After all three steps, `VendorOnboarding.isComplete = true` and `completedAt` is set
-- [ ] Accessing any onboarding step after completion redirects to `/vendor/dashboard`
-- [ ] `npm run build` passes in `apps/marketplace`
-- [ ] `progress-tracker.md` Phase 1 unit 1.4 (vendor registration) and Phase 2 onboarding tasks checked off
+- [x] After all three steps, `VendorOnboarding.isComplete = true` and `completedAt` is set
+- [x] Accessing any onboarding step after completion redirects to `/vendor/dashboard`
+- [x] `npm run build` passes in `apps/marketplace`
+- [x] `progress-tracker.md` Phase 1 unit 1.4 (vendor registration) and Phase 2 onboarding tasks checked off
 
 ---
 

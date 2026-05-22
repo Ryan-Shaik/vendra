@@ -13,7 +13,7 @@ export type RegisterVendorInput = z.infer<typeof RegisterVendorSchema>
 // ── Onboarding steps ────────────────────────────────────────────────────────
 
 export const UpdateVendorProfileSchema = z.object({
-  storeName:    z.string().min(2).max(100),
+  storeName:    z.string().min(2).max(100).regex(/[a-zA-Z0-9]/, 'Store name must contain at least one letter or number'),
   description:  z.string().min(10).max(1000),
   logoUrl:      z.string().url().optional(),
   bannerUrl:    z.string().url().optional(),
