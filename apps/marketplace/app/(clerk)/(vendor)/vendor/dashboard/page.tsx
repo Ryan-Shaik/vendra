@@ -13,10 +13,10 @@ export default async function VendorDashboardPage() {
   if (vendor.status === 'suspended')      redirect('/vendor/suspended')
 
   // Redirect to the first incomplete onboarding step
-  if (vendor.onboarding && !vendor.onboarding.isComplete) {
-    if (!vendor.onboarding.profileComplete)  redirect('/vendor/onboarding/profile')
-    if (!vendor.onboarding.shippingComplete) redirect('/vendor/onboarding/shipping')
-    if (!vendor.onboarding.stripeComplete)   redirect('/vendor/onboarding/connect')
+  if (!vendor.onboarding || !vendor.onboarding.isComplete) {
+    if (!vendor.onboarding?.profileComplete)  redirect('/vendor/onboarding/profile')
+    if (!vendor.onboarding?.shippingComplete) redirect('/vendor/onboarding/shipping')
+    if (!vendor.onboarding?.stripeComplete)   redirect('/vendor/onboarding/connect')
   }
 
   // Fully onboarded — render the dashboard

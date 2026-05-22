@@ -80,8 +80,18 @@ export async function updateVendorProfile(
 
     // Generate slug from store name if still a placeholder
     const isPlaceholderSlug = existing.storeSlug.startsWith('pending-')
+    const generatedSlug = slugify(input.storeName)
+
+    if (isPlaceholderSlug && !generatedSlug) {
+      return err(
+        'VALIDATION_ERROR',
+        'Store name must contain letters or numbers to generate a valid store URL.',
+        400,
+      )
+    }
+
     const storeSlug = isPlaceholderSlug
-      ? slugify(input.storeName)
+      ? generatedSlug
       : existing.storeSlug
 
     // Uniqueness check — only if slug is changing
@@ -112,9 +122,10 @@ export async function updateVendorProfile(
     })
 
     // Mark profile step complete
-    await prisma.vendorOnboarding.update({
+    await prisma.vendorOnboarding.upsert({
       where: { vendorId },
-      data: { profileComplete: true },
+      create: { vendorId, profileComplete: true },
+      update: { profileComplete: true },
     })
 
     return ok(vendor)
@@ -242,9 +253,10 @@ export async function completeShippingStep(
       )
     }
 
-    await prisma.vendorOnboarding.update({
+    await prisma.vendorOnboarding.upsert({
       where: { vendorId },
-      data: { shippingComplete: true },
+      create: { vendorId, shippingComplete: true },
+      update: { shippingComplete: true },
     })
 
     return ok({ shippingComplete: true })
@@ -278,8 +290,8 @@ export async function checkOnboardingComplete(
       onboarding.stripeComplete &&
       !onboarding.isComplete
     ) {
-      await prisma.vendorOnboarding.update({
-        where: { vendorId },
+      await prisma.vendorOnboarding.updateMany({
+        where: { vendorId, isComplete: false },
         data: { isComplete: true, completedAt: new Date() },
       })
       return ok({ isComplete: true })

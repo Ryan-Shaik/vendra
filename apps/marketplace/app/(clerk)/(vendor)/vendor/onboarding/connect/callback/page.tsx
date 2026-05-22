@@ -18,14 +18,17 @@ export default async function ConnectCallbackPage() {
   // If active — check if full onboarding is now complete
   if (status?.isActive) {
     // Belt-and-suspenders: update both vendor status and onboarding step directly in DB
-    await prisma.vendor.update({
-      where: { id: vendor.id },
-      data: { stripeConnectStatus: 'active' },
-    })
-    await prisma.vendorOnboarding.update({
-      where: { vendorId: vendor.id },
-      data: { stripeComplete: true },
-    })
+    await prisma.$transaction([
+      prisma.vendor.update({
+        where: { id: vendor.id },
+        data: { stripeConnectStatus: 'active' },
+      }),
+      prisma.vendorOnboarding.upsert({
+        where: { vendorId: vendor.id },
+        create: { vendorId: vendor.id, stripeComplete: true },
+        update: { stripeComplete: true },
+      }),
+    ])
 
     await checkOnboardingComplete(vendor.id)
     // Note: stripeComplete flag is also set by the account.updated webhook

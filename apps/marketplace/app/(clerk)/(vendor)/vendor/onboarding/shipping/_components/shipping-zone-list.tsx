@@ -2,6 +2,11 @@
 import { useState, useTransition } from 'react'
 import { useRouter }               from 'next/navigation'
 import type { ShippingZone }       from '@prisma/client'
+
+export type ZoneViewModel = Omit<ShippingZone, 'baseRate' | 'freeAbove'> & {
+  baseRate: number
+  freeAbove: number | null
+}
 import { Button }                  from '@/components/ui/button'
 import { ShippingZoneCard }        from '@/components/vendor/shipping-zone-card'
 import { ShippingZoneForm }        from '@/components/vendor/shipping-zone-form'
@@ -11,7 +16,7 @@ import { completeShipping }        from '../_actions/complete-shipping'
 import { Plus }                    from 'lucide-react'
 
 interface Props {
-  zones:          ShippingZone[]
+  zones:          ZoneViewModel[]
   vendorId:       string
   isStepComplete: boolean
 }

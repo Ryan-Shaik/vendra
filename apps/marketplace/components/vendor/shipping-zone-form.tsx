@@ -65,6 +65,7 @@ export function ShippingZoneForm({ onSubmit, onCancel, isPending }: Props) {
               key={zone.value}
               type="button"
               onClick={() => toggle(zone.value)}
+              aria-pressed={selected.includes(zone.value)}
               className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                 selected.includes(zone.value)
                   ? 'border-accent-primary bg-accent-primary text-white'
@@ -92,7 +93,7 @@ export function ShippingZoneForm({ onSubmit, onCancel, isPending }: Props) {
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-foreground">
+          <label className="text-sm font-medium text-foreground" id="freeAbove-hint">
             Free shipping above (৳)
             <span className="ml-1 text-xs text-muted-foreground">(optional)</span>
           </label>
@@ -102,6 +103,7 @@ export function ShippingZoneForm({ onSubmit, onCancel, isPending }: Props) {
             min="0"
             step="0.01"
             placeholder="1000"
+            aria-describedby="freeAbove-hint"
           />
         </div>
       </div>

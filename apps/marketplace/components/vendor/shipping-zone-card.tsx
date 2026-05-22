@@ -3,8 +3,13 @@ import type { ShippingZone } from '@prisma/client'
 import { Button }            from '@/components/ui/button'
 import { Trash2 }            from 'lucide-react'
 
+export type ZoneViewModel = Omit<ShippingZone, 'baseRate' | 'freeAbove'> & {
+  baseRate: number
+  freeAbove: number | null
+}
+
 interface Props {
-  zone:     ShippingZone
+  zone:     ZoneViewModel
   onDelete: () => void
 }
 
@@ -15,9 +20,9 @@ export function ShippingZoneCard({ zone, onDelete }: Props) {
       <div>
         <p className="text-sm font-medium text-foreground">{zone.name}</p>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          ৳{Number(zone.baseRate).toFixed(0)} flat rate
+          ৳{Number(zone.baseRate).toFixed(2)} flat rate
           {zone.freeAbove != null &&
-            ` · Free above ৳${Number(zone.freeAbove).toFixed(0)}`}
+            ` · Free above ৳${Number(zone.freeAbove).toFixed(2)}`}
           {' · '}
           {zone.countries.join(', ')}
         </p>

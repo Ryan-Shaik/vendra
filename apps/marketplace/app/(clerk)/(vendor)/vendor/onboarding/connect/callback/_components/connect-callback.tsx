@@ -18,7 +18,8 @@ export function ConnectCallback({ hasOutstandingRequirements, stripeStatus }: Pr
     startTransition(async () => {
       const { data, error } = await getOnboardingLink({})
       if (error) { setError(error.message); return }
-      window.location.href = data!.url
+      if (!data?.url) { setError('Failed to generate retry link'); return }
+      window.location.href = data.url
     })
   }
 

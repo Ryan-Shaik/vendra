@@ -27,8 +27,8 @@ export default async function OnboardingShippingPage() {
       <ShippingZoneList
         zones={(zones || []).map(z => ({
           ...z,
-          baseRate: Number(z.baseRate) as any,
-          freeAbove: z.freeAbove != null ? (Number(z.freeAbove) as any) : null,
+          baseRate: Number(z.baseRate),
+          freeAbove: z.freeAbove != null ? Number(z.freeAbove) : null,
         }))}
         vendorId={vendor.id}
         isStepComplete={vendor.onboarding?.shippingComplete ?? false}

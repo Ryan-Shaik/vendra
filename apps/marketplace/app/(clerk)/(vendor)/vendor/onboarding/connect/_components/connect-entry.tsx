@@ -18,8 +18,9 @@ export function ConnectEntry({ hasStripeAccount, stripeStatus }: Props) {
     startTransition(async () => {
       const { data, error } = await getOnboardingLink({})
       if (error) { setError(error.message); return }
+      if (!data?.url) { setError('Failed to generate onboarding link'); return }
       // Redirect to Stripe-hosted onboarding
-      window.location.href = data!.url
+      window.location.href = data.url
     })
   }
 
